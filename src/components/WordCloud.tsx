@@ -3,6 +3,18 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import cloud from 'd3-cloud';
 
+// CC Brand colors for word cloud
+const CC_COLORS = [
+  '#7CD7F6',  // Fresh Blue
+  '#BF91DA',  // Lilac
+  '#FFB23B',  // Bright Orange
+  '#D0D7FF',  // Cool Violet
+  '#DEB6FE',  // Light Lilac
+  '#B3E8FF',  // Light Blue
+  '#FFE5BF',  // Mellow Yellow
+  '#FFFFFF',  // White
+];
+
 type WordData = { text: string; size: number; count: number; x?: number; y?: number; rotate?: number };
 
 export default function WordCloud({ words }: { words: Record<string, number> }) {
@@ -13,8 +25,8 @@ export default function WordCloud({ words }: { words: Record<string, number> }) 
   useEffect(() => {
     const updateDimensions = () => {
       setDimensions({
-        width: Math.min(window.innerWidth * 0.85, 1200),
-        height: Math.min(window.innerHeight * 0.6, 600),
+        width: Math.min(window.innerWidth * 0.7, 1100),
+        height: Math.min(window.innerHeight * 0.65, 600),
       });
     };
     updateDimensions();
@@ -54,11 +66,6 @@ export default function WordCloud({ words }: { words: Record<string, number> }) 
     layoutWords();
   }, [layoutWords]);
 
-  const colors = [
-    '#60A5FA', '#34D399', '#FBBF24', '#F87171',
-    '#A78BFA', '#FB923C', '#2DD4BF', '#E879F9',
-  ];
-
   return (
     <svg
       ref={svgRef}
@@ -74,7 +81,7 @@ export default function WordCloud({ words }: { words: Record<string, number> }) 
             transform={`translate(${word.x ?? 0},${word.y ?? 0}) rotate(${word.rotate ?? 0})`}
             style={{
               fontSize: `${word.size}px`,
-              fill: colors[i % colors.length],
+              fill: CC_COLORS[i % CC_COLORS.length],
               fontWeight: 700,
               fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
               transition: 'font-size 0.5s ease, opacity 0.5s ease',

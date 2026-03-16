@@ -99,10 +99,10 @@ export default function DisplayPage() {
 
   if (!activeQuestion) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0B1345' }}>
         <div className="text-center">
           <div className="text-6xl mb-6 animate-pulse">📊</div>
-          <h1 className="text-white/50 text-3xl font-light">
+          <h1 className="text-3xl font-light" style={{ color: '#D0D7FF' }}>
             Venter på neste spørsmål...
           </h1>
         </div>
@@ -111,44 +111,60 @@ export default function DisplayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex flex-col p-8">
+    <div className="min-h-screen flex flex-col" style={{ background: '#0B1345' }}>
       {/* Question text */}
-      <div className="text-center mb-8">
-        <h1 className="text-white text-3xl md:text-5xl font-bold leading-tight max-w-4xl mx-auto">
+      <div className="text-center pt-8 pb-4 px-8">
+        <h1 className="text-white text-3xl md:text-5xl font-bold leading-tight max-w-5xl mx-auto">
           {activeQuestion.text}
         </h1>
-        <div className="mt-4 text-white/40 text-xl font-mono">
-          {responses.length} {responses.length === 1 ? 'svar' : 'svar'}
+        <div className="mt-3 text-xl font-mono" style={{ color: '#D0D7FF', opacity: 0.6 }}>
+          {responses.length} svar
         </div>
       </div>
 
-      {/* Visualization */}
-      <div className="flex-1 flex items-center justify-center">
-        {activeQuestion.type === 'word_cloud' ? (
-          <WordCloud words={wordFrequencies} />
-        ) : (
-          <BarChart
-            options={activeQuestion.options || []}
-            votes={voteCounts}
-          />
-        )}
-      </div>
+      {/* Main content: 3/4 visualization + 1/4 QR */}
+      <div className="flex-1 flex items-stretch px-8 pb-8 gap-6">
+        {/* Left: Visualization (3/4) */}
+        <div className="w-3/4 flex items-center justify-center">
+          {activeQuestion.type === 'word_cloud' ? (
+            <WordCloud words={wordFrequencies} />
+          ) : (
+            <BarChart
+              options={activeQuestion.options || []}
+              votes={voteCounts}
+            />
+          )}
+        </div>
 
-      {/* QR Code + URL */}
-      <div className="fixed bottom-8 right-8 flex items-center gap-6 bg-white/10 backdrop-blur-md rounded-3xl p-6">
-        {voteUrl && (
-          <QRCodeSVG
-            value={voteUrl}
-            size={200}
-            bgColor="transparent"
-            fgColor="#ffffff"
-            level="M"
-          />
-        )}
-        <div className="text-white/70 max-w-[200px]">
-          <div className="text-white/40 text-sm mb-2 uppercase tracking-wider font-semibold">Stem her</div>
-          <div className="font-mono text-base break-all leading-relaxed">
-            {shortUrl}
+        {/* Right: QR Code + URL (1/4) */}
+        <div className="w-1/4 flex items-center justify-center">
+          <div
+            className="flex flex-col items-center gap-5 rounded-3xl p-6 w-full"
+            style={{ background: 'rgba(208, 215, 255, 0.1)', backdropFilter: 'blur(12px)' }}
+          >
+            {voteUrl && (
+              <QRCodeSVG
+                value={voteUrl}
+                size={220}
+                bgColor="transparent"
+                fgColor="#D0D7FF"
+                level="M"
+              />
+            )}
+            <div className="text-center">
+              <div
+                className="text-sm mb-2 uppercase tracking-widest font-semibold"
+                style={{ color: '#FFB23B' }}
+              >
+                Stem her
+              </div>
+              <div
+                className="font-mono text-sm break-all leading-relaxed"
+                style={{ color: '#D0D7FF', opacity: 0.8 }}
+              >
+                {shortUrl}
+              </div>
+            </div>
           </div>
         </div>
       </div>
