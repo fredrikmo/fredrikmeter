@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { isAuthenticated } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
-  const { questionId, password } = await request.json();
-
-  if (password !== 'panel2025') {
-    return NextResponse.json({ error: 'Feil passord' }, { status: 401 });
+  if (!isAuthenticated(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const { questionId } = await request.json();
 
   const { error } = await supabase
     .from('responses')
