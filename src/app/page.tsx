@@ -18,8 +18,14 @@ export default function Home() {
             Storskjerm-visning
           </Link>
           <Link
-            href="/admin"
+            href="/results"
             className="block w-full py-4 bg-white/10 text-white/80 text-lg font-medium rounded-2xl hover:bg-white/20 transition-colors"
+          >
+            Resultater
+          </Link>
+          <Link
+            href="/admin"
+            className="block w-full py-4 bg-white/5 text-white/50 text-lg font-medium rounded-2xl hover:bg-white/10 transition-colors"
           >
             Admin
           </Link>

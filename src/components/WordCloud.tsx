@@ -17,22 +17,32 @@ const CC_COLORS = [
 
 type WordData = { text: string; size: number; count: number; x?: number; y?: number; rotate?: number };
 
-export default function WordCloud({ words }: { words: Record<string, number> }) {
+type WordCloudProps = {
+  words: Record<string, number>;
+  width?: number;
+  height?: number;
+};
+
+export default function WordCloud({ words, width: widthProp, height: heightProp }: WordCloudProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [layout, setLayout] = useState<WordData[]>([]);
-  const [dimensions, setDimensions] = useState({ width: 900, height: 500 });
+  const [dimensions, setDimensions] = useState({ width: widthProp ?? 900, height: heightProp ?? 500 });
 
   useEffect(() => {
+    if (widthProp !== undefined && heightProp !== undefined) {
+      setDimensions({ width: widthProp, height: heightProp });
+      return;
+    }
     const updateDimensions = () => {
       setDimensions({
-        width: Math.min(window.innerWidth * 0.7, 1100),
-        height: Math.min(window.innerHeight * 0.65, 600),
+        width: widthProp ?? Math.min(window.innerWidth * 0.7, 1100),
+        height: heightProp ?? Math.min(window.innerHeight * 0.65, 600),
       });
     };
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
     return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [widthProp, heightProp]);
 
   const layoutWords = useCallback(() => {
     const entries = Object.entries(words);
