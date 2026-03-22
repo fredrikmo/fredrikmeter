@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { isAuthenticated } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
-  const { password, id, text, type, options } = await request.json();
-
-  if (password !== 'panel2025') {
-    return NextResponse.json({ error: 'Feil passord' }, { status: 401 });
+  if (!isAuthenticated(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const { id, text, type, options } = await request.json();
 
   if (!id || !text || !type) {
     return NextResponse.json({ error: 'ID, tekst og type er påkrevd' }, { status: 400 });
@@ -20,7 +21,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Flervalg trenger minst 2 alternativer' }, { status: 400 });
   }
 
-  // Check if ID already exists
   const { data: existing } = await supabase
     .from('questions')
     .select('id')

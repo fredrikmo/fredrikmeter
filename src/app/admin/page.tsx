@@ -14,7 +14,9 @@ const emptyForm: QuestionForm = { id: '', text: '', type: 'multiple_choice', opt
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
   const [seeded, setSeeded] = useState(false);
@@ -44,6 +46,14 @@ export default function AdminPage() {
     setVoteCounts(counts);
   }, []);
 
+  // Check if already authenticated via cookie on mount
+  useEffect(() => {
+    fetch('/api/admin/check').then((r) => {
+      if (r.ok) setAuthenticated(true);
+      setCheckingAuth(false);
+    });
+  }, []);
+
   useEffect(() => {
     if (!authenticated) return;
     fetchData();
@@ -51,11 +61,25 @@ export default function AdminPage() {
     return () => clearInterval(interval);
   }, [authenticated, fetchData]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'panel2025') {
+    setLoginError('');
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
       setAuthenticated(true);
+      setPassword('');
+    } else {
+      setLoginError('Feil passord');
     }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    setAuthenticated(false);
   };
 
   const seedQuestions = async () => {
@@ -71,7 +95,7 @@ export default function AdminPage() {
     await fetch('/api/admin/activate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId, password }),
+      body: JSON.stringify({ questionId }),
     });
     await fetchData();
     setActionLoading(null);
@@ -82,7 +106,7 @@ export default function AdminPage() {
     await fetch('/api/admin/deactivate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({}),
     });
     await fetchData();
     setActionLoading(null);
@@ -94,13 +118,12 @@ export default function AdminPage() {
     await fetch('/api/admin/reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId, password }),
+      body: JSON.stringify({ questionId }),
     });
     await fetchData();
     setActionLoading(null);
   };
 
-  // CRUD handlers
   const openAddForm = () => {
     setForm({ ...emptyForm });
     setEditingId(null);
@@ -146,7 +169,6 @@ export default function AdminPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        password,
         id: form.id.trim(),
         text: form.text.trim(),
         type: form.type,
@@ -185,7 +207,6 @@ export default function AdminPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        password,
         id: form.id,
         text: form.text.trim(),
         type: form.type,
@@ -211,7 +232,7 @@ export default function AdminPage() {
     await fetch('/api/admin/questions/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, id: questionId }),
+      body: JSON.stringify({ id: questionId }),
     });
     await fetchData();
     setActionLoading(null);
@@ -232,7 +253,6 @@ export default function AdminPage() {
     setForm({ ...form, options: form.options.filter((_, i) => i !== index) });
   };
 
-  // Shared form component
   const renderForm = (isEdit: boolean) => (
     <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-blue-300">
       <h3 className="text-lg font-bold text-gray-900 mb-4">
@@ -332,6 +352,14 @@ export default function AdminPage() {
     </div>
   );
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-gray-400 text-lg">Laster...</div>
+      </div>
+    );
+  }
+
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
@@ -342,8 +370,11 @@ export default function AdminPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Passord"
-            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none mb-4 text-gray-900"
+            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none mb-3 text-gray-900"
           />
+          {loginError && (
+            <div className="mb-3 text-sm text-red-600">{loginError}</div>
+          )}
           <button
             type="submit"
             className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
@@ -382,10 +413,15 @@ export default function AdminPage() {
             >
               Deaktiver alle
             </button>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-white text-gray-600 border border-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              Logg ut
+            </button>
           </div>
         </div>
 
-        {/* Add form */}
         {showAddForm && <div className="mb-6">{renderForm(false)}</div>}
 
         <div className="space-y-4">
